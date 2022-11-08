@@ -1,0 +1,16 @@
+---
+const { items } = Astro.props
+const slugify = text => text.toLowerCase().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '')
+---
+<ul>
+    { items.map(item => (
+        <li>
+            <a 
+                href={ `/${item.ProductID}--${slugify(item.ProductName)}` }
+                hx-boost="true"
+            >
+                { item.ProductName }
+            </a>
+        </li>
+    ))}
+</ul>

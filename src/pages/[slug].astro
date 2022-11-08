@@ -1,0 +1,44 @@
+---
+import initSqlJs from 'sql.js';
+import Layout from '../layouts/Layout.astro';
+
+const getDb = async () => {
+    const dbUrl = new URL('/northwind.sqlite', Astro.url)
+    const sqlBuffer = await fetch(dbUrl).then(res => res.arrayBuffer())
+    const SQL = await initSqlJs()
+    return new SQL.Database(new Uint8Array(sqlBuffer))
+}
+
+const getProduct = async ({ ProductID }) => {
+    const db = await getDb()
+    const stmt = db.prepare(`
+        SELECT *
+        FROM Products AS P
+        LEFT JOIN Categories AS C ON C.CategoryID = P.ProductID
+        LEFT JOIN Suppliers as S ON S.SupplierID = P.SupplierID
+        WHERE ProductID = $ProductID
+        ;
+    `)
+    const item = stmt.getAsObject({ $ProductID: Number(ProductID) })
+    stmt.free()
+    return item
+}
+
+const slug = String(Astro.params.slug)
+const ProductID = Number(slug.split('--')[0])
+const item = await getProduct({ ProductID })
+---
+<Layout title={ item.ProductName }>
+    <h1><a href="/" hx-boost="true">Products</a>: { item.ProductName }</h1>
+    { /* item.Picture */ }
+    <dl>
+        <dt>Price</dt><dd>{ item.UnitPrice }</dd>
+        <dt>Quantity Per Unit</dt><dd>{ item.QuantityPerUnit }</dd>
+        <dt>Units In Stock</dt><dd>{ item.UnitsInStock }</dd>
+        <dt>Category</dt><dd>{ item.CategoryName } - { item.Description }</dd>
+        <dt>Supplier</dt><dd>{ item.CompanyName }, { item.City }, { item.Country }</dd>
+    </dl>
+</Layout>
+<style>
+    dt { font-weight: bold; }
+</style>

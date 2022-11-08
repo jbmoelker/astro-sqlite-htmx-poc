@@ -1,0 +1,20 @@
+{
+  "name": "astro-sqlite-htmx-poc",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "prebuild": "rm -rf dist/",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^3.1.2",
+    "astro": "^1.6.0",
+    "better-sqlite3": "^7.6.2",
+    "sql.js": "^1.8.0"
+  }
+}

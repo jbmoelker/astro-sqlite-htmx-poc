@@ -1,0 +1,68 @@
+---
+import initSqlJs from 'sql.js'
+import ProductList from '../components/ProductList.astro'
+import Layout from '../layouts/Layout.astro'
+
+const getDb = async () => {
+    // await new Promise(resolve => setTimeout(resolve, 1000))
+    const dbUrl = new URL('/northwind.sqlite', Astro.url)
+    const sqlBuffer = await fetch(dbUrl).then(res => res.arrayBuffer())
+    const SQL = await initSqlJs()
+    return new SQL.Database(new Uint8Array(sqlBuffer))
+}
+
+/**
+ * @todo: sanatise SQL query with something like node-pg-format
+ */
+const getItems = async (values) => {
+    const db = await getDb()
+    const stmt = db.prepare(`SELECT ProductID, ProductName FROM Products WHERE ProductName LIKE '%${values.ProductName}%';`)
+    const items = []
+    while (stmt.step()) {
+        const row = stmt.getAsObject()
+        items.push(row)
+    }
+    stmt.free()
+    return items
+}
+
+const headers = Astro.request.headers
+const params = Astro.url.searchParams
+const values = {
+    ProductName: params.get('ProductName') || '',
+}
+const items = await getItems(values)
+const isPartial = (headers.get('HX-Request') === 'true') && (new URL(headers.get('HX-current-url')).pathname === Astro.url.pathname)
+---
+{
+    isPartial
+    ? <ProductList items={ items } />
+    : <>
+        <Layout title="Products">
+            <h1>Products</h1>
+            <form method="GET">
+                <label for="ProductName">Product name</label>
+                <input 
+                    id="ProductName" 
+                    name="ProductName"
+                    type="search"
+                    value={ values.ProductName }
+                    hx-get={ Astro.url.href }
+                    hx-trigger="keyup changed 200ms search"
+                    hx-target="#items"
+                    hx-indicator="#items"
+                />
+                <button type="submit">Filter</button>
+            </form>
+            <div id="items">
+                <ProductList items={ items } />
+            </div>
+        </Layout>
+        <style>
+            #items.htmx-request {
+                opacity: .5;
+                transition: opacity .1s;
+            }
+        </style>
+    </>
+}
