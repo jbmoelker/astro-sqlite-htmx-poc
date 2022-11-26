@@ -1,6 +1,6 @@
 # Astro SQLite HTMX PoC
 
-**Proof-of-concept for a dynamic web application using [Astro.build](https://astro.build/), powered by a [SQLite database](https://sqlite.org/about.html) and progressive enhanced with [HTMX](https://htmx.org/).**
+**Proof-of-concept for a dynamic web application using [Astro.build](https://astro.build/), powered by a [SQLite database](https://sqlite.org/about.html) and progressively enhanced with [HTMX](https://htmx.org/).**
 
 
 ## 🚀 Project Structure
